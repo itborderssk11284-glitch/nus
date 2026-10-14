@@ -1,0 +1,125 @@
+{
+  "entities": {
+    "DailyRecord": {
+      "title": "DailyRecord",
+      "description": "Daily nursing workload and staffing assessment record for Sangkhlaburi Hospital wards",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique record identifier"
+        },
+        "date": {
+          "type": "string",
+          "description": "Record assessment date in YYYY-MM-DD format"
+        },
+        "recorderName": {
+          "type": "string",
+          "description": "Name of the nurse on duty who created or updated the entry"
+        },
+        "recorderPosition": {
+          "type": "string",
+          "description": "Nursing position title"
+        },
+        "recorderPhone": {
+          "type": "string",
+          "description": "Contact phone number"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Shift remarks, incident reports or handover notes"
+        },
+        "shiftType": {
+          "type": "string",
+          "description": "Shift category"
+        },
+        "er": {
+          "type": "object",
+          "description": "Emergency Department workload and staff data"
+        },
+        "opd": {
+          "type": "object",
+          "description": "Outpatient Department workload and staff data"
+        },
+        "ipd1": {
+          "type": "object",
+          "description": "IPD 1 ward workload and staff data"
+        },
+        "ipd2": {
+          "type": "object",
+          "description": "IPD 2 ward workload and staff data"
+        },
+        "lr": {
+          "type": "object",
+          "description": "Labor Room workload and staff data"
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the user who recorded this entry"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last modification"
+        }
+      },
+      "required": ["id", "date", "er", "opd", "ipd1", "ipd2", "lr"]
+    },
+    "StandardWeightsConfig": {
+      "title": "StandardWeightsConfig",
+      "description": "Configuration for standard care hours and MOPH coefficients",
+      "type": "object",
+      "properties": {
+        "er": {
+          "type": "object",
+          "description": "ER standard weight parameters"
+        },
+        "opd": {
+          "type": "object",
+          "description": "OPD standard weight parameters"
+        },
+        "ipd": {
+          "type": "object",
+          "description": "IPD standard weight parameters"
+        },
+        "lr": {
+          "type": "object",
+          "description": "LR standard weight parameters"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "ISO timestamp of last update"
+        }
+      },
+      "required": ["er", "opd", "ipd", "lr"]
+    },
+    "TestConnection": {
+      "title": "TestConnection",
+      "description": "Ping document to verify Firestore network connectivity",
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Connection status string"
+        }
+      }
+    }
+  },
+  "firestore": {
+    "/daily_records/{recordId}": {
+      "schema": "DailyRecord",
+      "description": "Collection of daily ward workload statistics and staffing logs"
+    },
+    "/standards_config/{configId}": {
+      "schema": "StandardWeightsConfig",
+      "description": "MOPH standard calculation weights config"
+    },
+    "/test/{docId}": {
+      "schema": "TestConnection",
+      "description": "System connectivity heartbeat"
+    }
+  }
+}

@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: Validate Daily Record Payload
+    function isValidDailyRecord(data) {
+      return data.id is string && data.id.size() <= 128
+        && data.date is string && data.date.size() <= 32
+        && data.hospitalId == 'sangkhlaburi'
+        && data.er is map
+        && data.opd is map
+        && data.ipd1 is map
+        && data.ipd2 is map
+        && data.lr is map
+        && (!('recorderName' in data) || (data.recorderName is string && data.recorderName.size() <= 200))
+        && (!('recorderPosition' in data) || (data.recorderPosition is string && data.recorderPosition.size() <= 200))
+        && (!('recorderPhone' in data) || (data.recorderPhone is string && data.recorderPhone.size() <= 50))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 5000))
+        && (!('shiftType' in data) || (data.shiftType is string && data.shiftType.size() <= 50))
+        && (!('userId' in data) || (data.userId is string && data.userId.size() <= 128))
+        && (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 100))
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    // Helper: Validate Standards Config Payload
+    function isValidStandardsConfig(data) {
+      return data.er is map
+        && data.opd is map
+        && data.ipd is map
+        && data.lr is map
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100));
+    }
+
+    // Daily Nursing Workload Records
+    match /daily_records/{recordId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn() && resource.data.hospitalId == 'sangkhlaburi';
+      allow create: if isSignedIn()
+                    && isValidId(recordId)
+                    && isValidDailyRecord(incoming());
+      allow update: if isSignedIn()
+                    && isValidId(recordId)
+                    && isValidDailyRecord(incoming())
+                    && incoming().hospitalId == existing().hospitalId
+                    && incoming().id == existing().id;
+      allow delete: if isSignedIn()
+                    && isValidId(recordId);
+    }
+
+    // MOPH Standard Calculation Weights
+    match /standards_config/{configId} {
+      allow get, list: if isSignedIn();
+      allow create, update: if isSignedIn()
+                            && isValidId(configId)
+                            && isValidStandardsConfig(incoming());
+      allow delete: if false;
+    }
+
+    // System Connection Health Check Document
+    match /test/{docId} {
+      allow get: if true;
+    }
+  }
+}
