@@ -28,11 +28,22 @@ import firebaseConfig from '../../firebase-applet-config.json';
 import { DailyRecord, StandardWeightsConfig } from '../types/nursing';
 import { DEFAULT_STANDARDS } from './calculator';
 
-// Initialize Firebase App
-export const app = initializeApp(firebaseConfig);
+// Resolved configuration supporting both firebase-applet-config.json and Vercel VITE_* env vars
+const effectiveFirebaseConfig = {
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || firebaseConfig.projectId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || firebaseConfig.appId,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || firebaseConfig.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || firebaseConfig.authDomain,
+  firestoreDatabaseId: import.meta.env.VITE_FIRESTORE_DATABASE_ID || firebaseConfig.firestoreDatabaseId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || firebaseConfig.storageBucket,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || firebaseConfig.messagingSenderId,
+};
 
-// CRITICAL: Must pass firebaseConfig.firestoreDatabaseId to getFirestore
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Initialize Firebase App
+export const app = initializeApp(effectiveFirebaseConfig);
+
+// CRITICAL: Must pass effectiveFirebaseConfig.firestoreDatabaseId to getFirestore
+export const db = getFirestore(app, effectiveFirebaseConfig.firestoreDatabaseId);
 
 // Auth instance
 export const auth = getAuth(app);
