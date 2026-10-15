@@ -42,8 +42,13 @@ import {
   FolderPlus,
   Check,
   X,
+  Lock,
+  ShieldCheck,
+  ShieldAlert,
+  Star,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { AppUser, canUserEditDepartment, canUserAddRecord, ROLE_LABELS, DEPARTMENT_LABELS } from '../types/auth';
 
 interface DataEntryFormProps {
   currentRecord: DailyRecord;
@@ -52,6 +57,7 @@ interface DataEntryFormProps {
   standardsConfig: StandardWeightsConfig;
   initialDept?: DepartmentKey;
   onOpenStandards: () => void;
+  appUser?: AppUser | null;
 }
 
 export const DataEntryForm: React.FC<DataEntryFormProps> = ({
@@ -61,10 +67,23 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
   standardsConfig,
   initialDept = 'ER',
   onOpenStandards,
+  appUser = null,
 }) => {
-  const [activeDept, setActiveDept] = useState<DepartmentKey>(initialDept);
+  // If user is department head, default initial department to their own department
+  const defaultDept = React.useMemo<DepartmentKey>(() => {
+    if (appUser?.role === 'department_head' && (appUser.department === 'ER' || appUser.department === 'OPD' || appUser.department === 'IPD1' || appUser.department === 'IPD2' || appUser.department === 'LR')) {
+      return appUser.department as DepartmentKey;
+    }
+    return initialDept;
+  }, [appUser, initialDept]);
+
+  const [activeDept, setActiveDept] = useState<DepartmentKey>(defaultDept);
   const [formData, setFormData] = useState<DailyRecord>(JSON.parse(JSON.stringify(currentRecord)));
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Permission check for active department
+  const canEditActiveDept = canUserEditDepartment(appUser, activeDept);
+  const canAddDate = canUserAddRecord(appUser);
 
   // New Date Modal / Popover state
   const [isNewDateModalOpen, setIsNewDateModalOpen] = useState(false);
@@ -359,15 +378,25 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
 
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             
-            {/* Action: ปุ่มเพิ่มบันทึกข้อมูลค่าใหม่ (New Date Record) */}
-            <button
-              type="button"
-              onClick={() => setIsNewDateModalOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
-            >
-              <FilePlus2 className="w-4 h-4" />
-              <span>+ เพิ่มบันทึกข้อมูลวันใหม่</span>
-            </button>
+            {/* Action: ปุ่มเพิ่มบันทึกข้อมูลค่าใหม่ (New Date Record) - เฉพาะผู้มีสิทธิ์เพิ่ม */}
+            {canAddDate ? (
+              <button
+                type="button"
+                onClick={() => setIsNewDateModalOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
+              >
+                <FilePlus2 className="w-4 h-4" />
+                <span>+ เพิ่มบันทึกข้อมูลวันใหม่</span>
+              </button>
+            ) : (
+              <div
+                title="หัวหน้ากลุ่มการพยาบาลไม่มีสิทธิ์เพิ่ม ลบ หรือแก้ไขข้อมูล"
+                className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 text-xs font-medium flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-not-allowed opacity-60"
+              >
+                <Lock className="w-3.5 h-3.5" />
+                <span>โหมดดูข้อมูล (ปิดการเพิ่มวัน)</span>
+              </div>
+            )}
 
             {/* Current Active Date Selector */}
             <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -388,15 +417,78 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
               <User className="w-3.5 h-3.5 text-slate-400" />
               <input
                 type="text"
+                disabled={!canEditActiveDept}
                 placeholder="ชื่อพยาบาลผู้ตรวจนับ"
-                value={formData.recorderName}
+                value={formData.recorderName || appUser?.name || ''}
                 onChange={(e) => setFormData({ ...formData, recorderName: e.target.value })}
-                className="text-xs font-medium bg-transparent text-slate-800 dark:text-slate-200 focus:outline-hidden w-36 sm:w-40"
+                className="text-xs font-medium bg-transparent text-slate-800 dark:text-slate-200 focus:outline-hidden w-36 sm:w-44 disabled:opacity-75"
               />
             </div>
           </div>
         </div>
       </div>
+
+      {/* Role Access & Permission Status Banner */}
+      {appUser && (
+        <div
+          className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 text-xs shadow-xs transition-colors ${
+            appUser.role === 'nursing_director'
+              ? 'bg-blue-50/90 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800 text-blue-900 dark:text-blue-200'
+              : appUser.role === 'department_head'
+              ? canEditActiveDept
+                ? 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200'
+                : 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200'
+              : 'bg-purple-50/90 dark:bg-purple-950/40 border-purple-200 dark:border-purple-800 text-purple-900 dark:text-purple-200'
+          }`}
+        >
+          <div className="flex items-center gap-2.5">
+            {appUser.role === 'nursing_director' && <ShieldAlert className="w-5 h-5 text-blue-600 shrink-0" />}
+            {appUser.role === 'department_head' &&
+              (canEditActiveDept ? (
+                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+              ) : (
+                <Lock className="w-5 h-5 text-amber-600 shrink-0" />
+              ))}
+            {appUser.role === 'admin' && <ShieldCheck className="w-5 h-5 text-purple-600 shrink-0" />}
+
+            <div>
+              <div className="font-bold text-xs sm:text-sm flex items-center gap-2">
+                <span>{appUser.name}</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/80 dark:bg-slate-800 shadow-2xs border border-current">
+                  {ROLE_LABELS[appUser.role]?.badge}
+                </span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-slate-200/60 dark:bg-slate-700/60">
+                  {DEPARTMENT_LABELS[appUser.department]?.short || appUser.department}
+                </span>
+              </div>
+              <div className="text-[11px] opacity-90 mt-0.5">
+                {appUser.role === 'nursing_director' &&
+                  '🔍 สิทธิ์หัวหน้ากลุ่มการพยาบาล: ตรวจสอบและดูข้อมูลภาพรวมได้ทุกฝ่ายงาน แต่ไม่สามารถ เพิ่ม ลบ หรือแก้ไขข้อมูลได้ตามระเบียบสภาการพยาบาล'}
+                {appUser.role === 'department_head' &&
+                  (canEditActiveDept
+                    ? `✏️ ฝ่ายงานของคุณ (${DEPARTMENT_LABELS[appUser.department]?.short}): คุณมีสิทธิ์เพิ่ม ลบ แก้ไข และบันทึกข้อมูลของฝ่ายงานนี้ได้อย่างสมบูรณ์`
+                    : `🔒 ฝ่ายงานอื่น: คุณเป็นหัวหน้าฝ่ายงาน ${DEPARTMENT_LABELS[appUser.department]?.short} สามารถดูข้อมูลฝ่ายงาน ${activeDept} ได้เท่านั้น (ไม่มีสิทธิ์แก้ไข)`)}
+                {appUser.role === 'admin' &&
+                  '👑 สิทธิ์ผู้ดูแลระบบ (Admin): มีสิทธิ์บันทึก เพิ่ม ลบ และแก้ไขข้อมูลได้ทุกฝ่ายงานอย่างสมบูรณ์'}
+              </div>
+            </div>
+          </div>
+
+          <div className="hidden sm:flex items-center gap-1.5 shrink-0 text-[11px] font-semibold px-2.5 py-1 rounded-xl bg-white/60 dark:bg-slate-800/60 border border-current">
+            {canEditActiveDept ? (
+              <>
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                <span>อนุญาตให้แก้ไข</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 text-amber-600" />
+                <span>โหมดอ่านอย่างเดียว</span>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Save Success Alert Notification */}
       {saveSuccess && (
@@ -426,11 +518,13 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeDept === tab.key;
+          const isOwnDept = appUser?.role === 'department_head' && appUser.department === tab.key;
+          const isOtherDept = appUser?.role === 'department_head' && appUser.department !== tab.key;
           return (
             <button
               key={tab.key}
               onClick={() => setActiveDept(tab.key)}
-              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm whitespace-nowrap transition-all ${
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl font-medium text-xs sm:text-sm whitespace-nowrap transition-all cursor-pointer ${
                 isActive
                   ? 'bg-emerald-700 text-white shadow-md shadow-emerald-900/20 dark:bg-emerald-600'
                   : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800'
@@ -438,6 +532,35 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
             >
               <Icon className={`w-4 h-4 ${isActive ? 'text-white' : tab.color}`} />
               <span>{tab.label}</span>
+              {isOwnDept && (
+                <span
+                  className={`text-[9px] px-1.5 py-0.2 rounded-md font-bold flex items-center gap-0.5 ${
+                    isActive
+                      ? 'bg-white text-emerald-800'
+                      : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                  }`}
+                >
+                  <Star className="w-2.5 h-2.5 fill-current" />
+                  <span>ฝ่ายของคุณ</span>
+                </span>
+              )}
+              {isOtherDept && (
+                <span
+                  className={`text-[9px] px-1.5 py-0.2 rounded-md font-semibold flex items-center gap-0.5 opacity-80 ${
+                    isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  <Lock className="w-2.5 h-2.5" />
+                  <span>อ่านอย่างเดียว</span>
+                </span>
+              )}
+              {appUser?.role === 'nursing_director' && (
+                <span className={`text-[9px] opacity-75 ${isActive ? 'text-white' : 'text-slate-400'}`}>
+                  (อ่าน)
+                </span>
+              )}
             </button>
           );
         })}
@@ -749,14 +872,16 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
                   <span className="text-xs font-mono font-bold text-blue-800 dark:text-blue-300">
                     รวม: {activeCalc.indirectCareHours} ชม./วัน
                   </span>
-                  <button
-                    type="button"
-                    onClick={handleOpenAddIndirect}
-                    className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-xs"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>เพิ่มประเภทงานรอง</span>
-                  </button>
+                  {canEditActiveDept && (
+                    <button
+                      type="button"
+                      onClick={handleOpenAddIndirect}
+                      className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold flex items-center gap-1 shadow-xs cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>เพิ่มประเภทงานรอง</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -810,24 +935,26 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
                         </div>
 
                         {/* Edit & Delete Buttons */}
-                        <div className="flex items-center gap-1 pl-2 border-l border-slate-200 dark:border-slate-700">
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditIndirect(item)}
-                            title="แก้ไขประเภทงานรองนี้"
-                            className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteIndirectItem(item.id)}
-                            title="ลบประเภทงานรองนี้"
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        {canEditActiveDept && (
+                          <div className="flex items-center gap-1 pl-2 border-l border-slate-200 dark:border-slate-700">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditIndirect(item)}
+                              title="แก้ไขประเภทงานรองนี้"
+                              className="p-1 rounded text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950 cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteIndirectItem(item.id)}
+                              title="ลบประเภทงานรองนี้"
+                              className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
