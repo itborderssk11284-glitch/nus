@@ -206,3 +206,26 @@ export function saveThemePreference(theme: 'light' | 'dark'): void {
     console.error(e);
   }
 }
+
+export type FontScale = 'normal' | 'comfort' | 'large';
+const STORAGE_KEY_FONT_SCALE = 'sangkhlaburi_font_scale_v2';
+
+export function getFontScalePreference(): FontScale {
+  try {
+    const val = localStorage.getItem(STORAGE_KEY_FONT_SCALE);
+    if (val === 'comfort' || val === 'large' || val === 'normal') return val as FontScale;
+    return 'comfort'; // default to comfort for pleasing legibility
+  } catch {
+    return 'comfort';
+  }
+}
+
+export function saveFontScalePreference(scale: FontScale): void {
+  try {
+    localStorage.setItem(STORAGE_KEY_FONT_SCALE, scale);
+    document.documentElement.setAttribute('data-font-scale', scale);
+  } catch (e) {
+    console.error(e);
+  }
+}
+

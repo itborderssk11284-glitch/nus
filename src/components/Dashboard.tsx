@@ -91,43 +91,43 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="space-y-5">
       
-      {/* Top Banner & Control Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 dark:from-emerald-950 dark:via-slate-900 dark:to-teal-950 text-white p-5 rounded-2xl shadow-lg border border-emerald-600/30">
+      {/* Top Banner & Control Bar (Eye-Care Soft Contrast) */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 dark:from-emerald-950 dark:via-slate-900 dark:to-slate-950 text-white p-4 sm:p-5 rounded-2xl shadow-md border border-emerald-600/30">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/15 text-emerald-100 text-xs font-medium backdrop-blur-xs">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-white/15 text-emerald-100 text-xs font-semibold backdrop-blur-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Sangkhlaburi Hospital Smart Assessment • ค่างานพยาบาล 3 ส่วน</span>
+            <span>โรงพยาบาลสังขละบุรี • ประเมินค่างาน 3 ส่วนตามเกณฑ์สภาการพยาบาล</span>
           </div>
-          <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+          <h2 className="text-base sm:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
             Sangkhlaburi Hospital Smart Workload and Workforce Assessment System
           </h2>
-          <p className="text-emerald-100/90 text-xs sm:text-sm flex items-center gap-1.5 flex-wrap">
-            <Calendar className="w-4 h-4 text-emerald-300" />
-            <span>{thaiDateFormatted}</span>
-            <span className="text-emerald-300/60">•</span>
-            <span>ระบบประเมินค่างานและอัตรากำลังพยาบาลอัจฉริยะ</span>
-            <span className="text-emerald-300/60">•</span>
-            <span>ผู้ตรวจนับ: {currentRecord.recorderName || 'พยาบาลตรวจการเวร'}</span>
+          <p className="text-emerald-100/90 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1 font-semibold text-white">
+              <Calendar className="w-3.5 h-3.5 text-emerald-300" />
+              <span>{thaiDateFormatted}</span>
+            </span>
+            <span className="text-emerald-300/50">•</span>
+            <span>ผู้ตรวจนับ: <strong className="text-white font-medium">{currentRecord.recorderName || 'พยาบาลตรวจการเวร'}</strong></span>
           </p>
         </div>
 
         {/* Date Selector & Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Quick Date Switcher */}
-          <div className="flex items-center bg-white/10 dark:bg-black/30 backdrop-blur-xs rounded-xl p-1 border border-white/20">
-            <span className="text-xs text-emerald-200 px-2 font-medium">เลือกวัน:</span>
+          <div className="flex items-center bg-white/15 dark:bg-black/40 backdrop-blur-xs rounded-xl px-2.5 py-1.5 border border-white/20">
+            <span className="text-xs text-emerald-200 pr-1.5 font-medium">วันที่ตรวจ:</span>
             <input
               type="date"
               value={currentRecord.date}
               onChange={(e) => onSelectDate(e.target.value)}
-              className="bg-transparent text-white text-xs font-semibold focus:outline-hidden py-1 px-1 cursor-pointer [color-scheme:dark]"
+              className="bg-transparent text-white text-xs font-bold font-mono focus:outline-hidden cursor-pointer [color-scheme:dark]"
             />
           </div>
 
           {/* Quick Export Excel */}
           <button
             onClick={onExportExcel}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/25 transition-all shadow-2xs active:scale-95"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
             <span>ส่งออก Excel</span>
@@ -230,7 +230,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* 4 Core Overall KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4.5">
         
         {/* KPI 1: Total Nursing Care Hours */}
         <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-shadow">
@@ -654,19 +654,19 @@ const DepartmentCard: React.FC<DepartmentCardProps> = ({
         {/* Header */}
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 rounded-xl ${c.bg} ${c.text} flex items-center justify-center`}>
+            <div className={`w-10 h-10 rounded-xl ${c.bg} ${c.text} flex items-center justify-center shrink-0 shadow-2xs`}>
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
+              <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
                 {calc.departmentName}
               </h4>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className={`text-[10px] px-1.5 py-0.2 rounded font-semibold ${statusBadge.class}`}>
+              <div className="flex items-center gap-1.5 mt-1">
+                <span className={`text-[11px] px-2 py-0.5 rounded-md font-bold ${statusBadge.class}`}>
                   {statusBadge.label}
                 </span>
                 {subBadge && (
-                  <span className="text-[10px] px-1.5 py-0.2 rounded font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                  <span className="text-[11px] px-2 py-0.5 rounded-md font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                     {subBadge}
                   </span>
                 )}
@@ -676,7 +676,7 @@ const DepartmentCard: React.FC<DepartmentCardProps> = ({
 
           <button
             onClick={onEdit}
-            className="text-xs text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 p-1"
+            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 p-1.5 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded-lg transition-colors"
             title="แก้ไขสถิติข้อมูล"
           >
             แก้ไข
@@ -684,76 +684,78 @@ const DepartmentCard: React.FC<DepartmentCardProps> = ({
         </div>
 
         {/* 3-Part Care Breakdown in Card */}
-        <div className="mt-3.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-1.5 text-xs">
-          <div className="flex justify-between items-center text-[11px] font-semibold text-slate-600 dark:text-slate-300">
+        <div className="mt-3.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 space-y-1.5 text-xs">
+          <div className="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-200">
             <span>ค่างานรวม (TNH):</span>
-            <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+            <span className="font-mono text-emerald-600 dark:text-emerald-400 font-extrabold text-sm sm:text-base">
               {calc.totalNursingHours} ชม.
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-1 text-[10px] text-center pt-1 border-t border-slate-200/60 dark:border-slate-700/60">
-            <div className="p-1 rounded bg-white dark:bg-slate-900">
-              <span className="text-slate-400 block">งานหลัก</span>
-              <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">{calc.directCareHours}</span>
+          <div className="grid grid-cols-3 gap-1.5 text-xs text-center pt-1.5 border-t border-slate-200/80 dark:border-slate-700/80">
+            <div className="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+              <span className="text-slate-500 dark:text-slate-400 text-[11px] block">งานหลัก</span>
+              <span className="font-extrabold font-mono text-emerald-600 dark:text-emerald-400">{calc.directCareHours}</span>
             </div>
-            <div className="p-1 rounded bg-white dark:bg-slate-900">
-              <span className="text-slate-400 block">งานรอง</span>
-              <span className="font-bold font-mono text-blue-600 dark:text-blue-400">{calc.indirectCareHours}</span>
+            <div className="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+              <span className="text-slate-500 dark:text-slate-400 text-[11px] block">งานรอง</span>
+              <span className="font-extrabold font-mono text-blue-600 dark:text-blue-400">{calc.indirectCareHours}</span>
             </div>
-            <div className="p-1 rounded bg-white dark:bg-slate-900">
-              <span className="text-slate-400 block">งานสนับสนุน</span>
-              <span className="font-bold font-mono text-purple-600 dark:text-purple-400">{calc.supportCareHours}</span>
+            <div className="p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+              <span className="text-slate-500 dark:text-slate-400 text-[11px] block">งานสนับสนุน</span>
+              <span className="font-extrabold font-mono text-purple-600 dark:text-purple-400">{calc.supportCareHours}</span>
             </div>
           </div>
         </div>
 
         {/* Workload Metric Numbers */}
-        <div className="grid grid-cols-2 gap-2 my-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+        <div className="grid grid-cols-2 gap-2 my-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800">
           <div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">อัตรากำลัง FTE</div>
-            <div className="text-base font-bold font-mono text-slate-900 dark:text-white">
-              {calc.requiredFTE} <span className="text-[10px] font-normal">อัตรา</span>
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">อัตรากำลัง FTE</div>
+            <div className="text-base font-extrabold font-mono text-slate-900 dark:text-white mt-0.5">
+              {calc.requiredFTE} <span className="text-xs font-normal text-slate-500">อัตรา</span>
             </div>
-            <div className="text-[10px] text-slate-400">ผลิตภาพ: {calc.productivityRate}%</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">ผลิตภาพ: <strong className="text-slate-700 dark:text-slate-300">{calc.productivityRate}%</strong></div>
           </div>
-          <div className="border-l border-slate-200 dark:border-slate-700/60 pl-2.5">
-            <div className="text-[10px] text-slate-500 dark:text-slate-400">จริง / ควรมี</div>
-            <div className="text-base font-bold font-mono text-slate-900 dark:text-white">
+          <div className="border-l border-slate-200 dark:border-slate-700/60 pl-3">
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">จริง / ควรมี</div>
+            <div className="text-base font-extrabold font-mono text-slate-900 dark:text-white mt-0.5">
               <span className={calc.staffingGap < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}>
                 {calc.totalActualStaff}
               </span>
               <span className="text-slate-400 font-light"> / </span>
               {calc.totalRequiredStaff}
-              <span className="text-[10px] font-normal text-slate-500"> คน</span>
+              <span className="text-xs font-normal text-slate-500"> คน</span>
             </div>
-            <div className="text-[10px] text-slate-400">
-              Gap: {calc.staffingGap > 0 ? `+${calc.staffingGap}` : calc.staffingGap} คน
+            <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Gap: <strong className={calc.staffingGap < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}>
+                {calc.staffingGap > 0 ? `+${calc.staffingGap}` : calc.staffingGap} คน
+              </strong>
             </div>
           </div>
         </div>
 
         {/* Shift-by-Shift Breakdown */}
         <div className="mb-3">
-          <div className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mb-1 flex justify-between">
+          <div className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-1.5 flex justify-between">
             <span>เวร: จริง / ควรมี</span>
-            <span>(เช้า • บ่าย • ดึก)</span>
+            <span className="text-slate-400 text-[11px] font-normal">(เช้า • บ่าย • ดึก)</span>
           </div>
-          <div className="grid grid-cols-3 gap-1 text-center text-xs">
-            <div className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800/80">
-              <div className="text-[10px] text-slate-400">เช้า</div>
-              <div className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
+          <div className="grid grid-cols-3 gap-1.5 text-center text-xs">
+            <div className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">เช้า</div>
+              <div className="font-mono font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm mt-0.5">
                 {calc.actualStaffPerShift.morning}/{calc.requiredStaffPerShift.morning}
               </div>
             </div>
-            <div className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800/80">
-              <div className="text-[10px] text-slate-400">บ่าย</div>
-              <div className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
+            <div className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">บ่าย</div>
+              <div className="font-mono font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm mt-0.5">
                 {calc.actualStaffPerShift.afternoon}/{calc.requiredStaffPerShift.afternoon}
               </div>
             </div>
-            <div className="p-1 rounded-lg bg-slate-100 dark:bg-slate-800/80">
-              <div className="text-[10px] text-slate-400">ดึก</div>
-              <div className="font-mono font-bold text-slate-800 dark:text-slate-200 text-xs">
+            <div className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200/50 dark:border-slate-700/50">
+              <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">ดึก</div>
+              <div className="font-mono font-extrabold text-slate-900 dark:text-white text-xs sm:text-sm mt-0.5">
                 {calc.actualStaffPerShift.night}/{calc.requiredStaffPerShift.night}
               </div>
             </div>
@@ -761,11 +763,11 @@ const DepartmentCard: React.FC<DepartmentCardProps> = ({
         </div>
 
         {/* Key Department Statistics Snapshot */}
-        <div className="space-y-0.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+        <div className="space-y-1 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
           {details.map((d, i) => (
             <div key={i} className="flex justify-between py-0.5 text-slate-600 dark:text-slate-400">
               <span>{d.label}</span>
-              <span className="font-semibold text-slate-800 dark:text-slate-200">{d.value}</span>
+              <span className="font-bold text-slate-800 dark:text-slate-200">{d.value}</span>
             </div>
           ))}
         </div>
