@@ -128,8 +128,14 @@ export const DataEntryForm: React.FC<DataEntryFormProps> = ({
   });
 
   React.useEffect(() => {
-    setFormData(JSON.parse(JSON.stringify(currentRecord)));
-  }, [currentRecord]);
+    const clone = JSON.parse(JSON.stringify(currentRecord));
+    if (!clone.recorderName && appUser) {
+      clone.recorderName = appUser.name;
+      clone.recorderPosition = appUser.position || '';
+      clone.recorderPhone = appUser.phone || '';
+    }
+    setFormData(clone);
+  }, [currentRecord, appUser]);
 
   // Helpers to get and set current active department data
   const currentDeptData = formData[activeDept.toLowerCase() as 'er' | 'opd' | 'ipd1' | 'ipd2' | 'lr'];

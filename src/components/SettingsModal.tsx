@@ -7,6 +7,7 @@ import {
   RotateCcw,
   Save,
   CheckCircle2,
+  Trash2,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -15,6 +16,7 @@ interface SettingsModalProps {
   standardsConfig: StandardWeightsConfig;
   onSaveStandards: (newConfig: StandardWeightsConfig) => void;
   onResetStandards: () => void;
+  onClearAllRecords?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -23,6 +25,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   standardsConfig,
   onSaveStandards,
   onResetStandards,
+  onClearAllRecords,
 }) => {
   const [cfg, setCfg] = useState<StandardWeightsConfig>(JSON.parse(JSON.stringify(standardsConfig)));
   const [savedToast, setSavedToast] = useState(false);
@@ -233,6 +236,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* Database Maintenance Section */}
+          {onClearAllRecords && (
+            <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div>
+                <div className="font-bold text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>ล้างข้อมูลบันทึกทั้งหมด (เคลียระบบเป็น 0)</span>
+                </div>
+                <div className="text-[11px] text-rose-600 dark:text-rose-400">
+                  ลบข้อมูลเวรทดสอบทั้งหมดในระบบ เพื่อเริ่มต้นบันทึกข้อมูลจริง
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (confirm('ยืนยัน: คุณต้องการลบข้อมูลเวรทั้งหมดในระบบ และเคลียฐานข้อมูลให้เป็น 0 เพื่อบันทึกข้อมูลจริงใช่หรือไม่?')) {
+                    onClearAllRecords();
+                    setSavedToast(true);
+                    setTimeout(() => setSavedToast(false), 1500);
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                <Trash2 className="w-3 h-3" />
+                <span>เคลียข้อมูลเป็น 0</span>
+              </button>
+            </div>
+          )}
 
           <div className="pt-2 flex items-center justify-between">
             <button

@@ -15,7 +15,6 @@ import { AppUser, UserRole, UserDepartment, ROLE_LABELS, DEPARTMENT_LABELS } fro
 import {
   authenticateUser,
   registerNewUser,
-  DEFAULT_HOSPITAL_USERS,
   loadAllUsers,
 } from '../utils/authStorage';
 import { HospitalLogo } from './HospitalLogo';
@@ -58,7 +57,10 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
   onGoogleSignIn,
   isGoogleLoading = false,
 }) => {
-  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
+  const [authTab, setAuthTab] = useState<'login' | 'register'>(() => {
+    const existing = loadAllUsers();
+    return existing.length === 0 ? 'register' : 'login';
+  });
 
   // Login form state
   const [loginUsername, setLoginUsername] = useState('');
@@ -90,20 +92,11 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
 
     const user = authenticateUser(loginUsername, loginPassword);
     if (!user) {
-      setLoginError('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง (หรือบัญชีถูกระงับ)');
+      setLoginError('ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง (หากยังไม่มีบัญชี กรุณากดแท็บ สมัครเข้าใช้งานระบบ)');
       return;
     }
 
     onLoginSuccess(user);
-  };
-
-  // Quick Switch / Demo Login button click
-  const handleQuickLogin = (demoUser: AppUser) => {
-    setLoginError(null);
-    const user = authenticateUser(demoUser.username, demoUser.password);
-    if (user) {
-      onLoginSuccess(user);
-    }
   };
 
   // Handle Registration submission
@@ -261,7 +254,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                       type="text"
                       value={loginUsername}
                       onChange={(e) => setLoginUsername(e.target.value)}
-                      placeholder="เช่น admin, director, head_er"
+                      placeholder="เช่น รหัสพนักงาน หรือ Username"
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder:text-slate-400"
                     />
                   </div>
@@ -271,7 +264,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                       <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                         รหัสผ่าน (Password)
                       </label>
-                      <span className="text-[11px] text-slate-400">(รหัสเริ่มต้น: password123)</span>
+                      <span className="text-[11px] text-slate-400">(ระบุรหัสผ่านของท่าน)</span>
                     </div>
                     <div className="relative">
                       <input
@@ -333,67 +326,105 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({
                 )}
               </div>
 
-              {/* Right Column: Quick Demo Profile Selection (ตามเงื่อนไขทั้ง 7 บัญชี) */}
-              <div className="lg:col-span-7 bg-slate-50 dark:bg-slate-800/60 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
+              {/* Right Column: Hospital Access Control Guidelines & Registration Callout (Production Ready) */}
+              <div className="lg:col-span-7 bg-slate-50 dark:bg-slate-800/60 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-700">
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-amber-500" />
-                      <span>เลือกเข้าสู่ระบบด่วนตามบทบาท (Quick Access Demo)</span>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                      <span>โครงสร้างสิทธิ์การเข้าใช้งานระบบ (Nursing RBAC)</span>
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      คลิกเพื่อทดสอบระบบตามเงื่อนไขสิทธิทันที (ไม่ต้องพิมพ์รหัสผ่าน)
+                      ระบบพร้อมสำหรับการบันทึกข้อมูลจริง โรงพยาบาลสังขละบุรี
                     </p>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    7 บัญชีพร้อมทดสอบ
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                    ข้อมูลจริง (Production)
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
-                  {DEFAULT_HOSPITAL_USERS.map((user) => {
-                    const roleInfo = ROLE_LABELS[user.role];
-                    const deptInfo = DEPARTMENT_LABELS[user.department];
-                    return (
-                      <button
-                        key={user.id}
-                        type="button"
-                        onClick={() => handleQuickLogin(user)}
-                        className="group text-left p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 hover:border-emerald-500 dark:hover:border-emerald-500 hover:shadow-md transition-all cursor-pointer relative"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2">
-                            <span className={`w-7 h-7 rounded-lg ${user.avatarColor || 'bg-slate-600'} text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs`}>
-                              {user.name.slice(0, 1)}
-                            </span>
-                            <div className="min-w-0">
-                              <div className="text-xs font-bold text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 truncate">
-                                {user.name}
-                              </div>
-                              <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                                {user.position}
-                              </div>
-                            </div>
-                          </div>
-                          <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-500 group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
-                        </div>
+                <div className="space-y-2.5">
+                  {/* Role 1: Nursing Director */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                          1
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                          หัวหน้ากลุ่มการพยาบาล (Nursing Directorate)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        ดูข้อมูลอย่างเดียว
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-8 leading-relaxed">
+                      มีสิทธิ์ดูข้อมูลสถิติ วิเคราะห์ภาระงานและอัตรากำลังของทุกฝ่ายงาน แต่ไม่สามารถเพิ่ม ลบ หรือแก้ไขข้อมูลได้
+                    </p>
+                  </div>
 
-                        <div className="mt-2 flex flex-wrap items-center gap-1">
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold border ${roleInfo.color}`}>
-                            {user.role === 'admin' && '👑 Admin (ทำได้ทุกฟังก์ชัน)'}
-                            {user.role === 'nursing_director' && '🩺 หัวหน้ากลุ่มฯ (ดูอย่างเดียว)'}
-                            {user.role === 'department_head' && `🏥 หัวหน้า ${user.department}`}
-                          </span>
-                        </div>
+                  {/* Role 2: Department Heads */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
+                          2
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                          หัวหน้าฝ่ายงาน (5 แผนกย่อย)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        สิทธิ์เฉพาะฝ่ายตนเอง
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-8 leading-relaxed">
+                      แบ่งเป็น 5 แผนก: <strong className="text-slate-700 dark:text-slate-300">ห้องฉุกเฉิน • ผู้ป่วยนอก • ผู้ป่วยใน 1 • ผู้ป่วยใน 2 • ห้องคลอด</strong> — มีสิทธิ์ดูข้อมูล เพิ่ม ลบ แก้ไข และพิมพ์รายงาน A4 เฉพาะฝ่ายงานของตนเอง
+                    </p>
+                  </div>
 
-                        <div className="mt-1 text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1">
-                          {user.role === 'nursing_director' && '• ดูข้อมูลได้ทุกฝ่ายงาน แต่ไม่สามารถเพิ่ม ลบ แก้ไข'}
-                          {user.role === 'department_head' && `• สิทธิเพิ่ม ลบ แก้ไข เฉพาะ ${deptInfo.short}`}
-                          {user.role === 'admin' && '• สิทธิเต็ม เพิ่ม ลบ แก้ไข ทุกฝ่ายงาน'}
-                        </div>
-                      </button>
-                    );
-                  })}
+                  {/* Role 3: Admin */}
+                  <div className="p-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/80 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-xs">
+                          3
+                        </span>
+                        <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                          ผู้ดูแลระบบ (Admin)
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                        สิทธิ์เต็มรูปแบบ
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 pl-8 leading-relaxed">
+                      ทำได้ทุกฟังก์ชัน ทั้งบันทึกค่างาน กำหนดเกณฑ์มาตรฐานสภาฯ ดูรายงาน และจัดการบัญชีผู้ใช้งานระบบ
+                    </p>
+                  </div>
+                </div>
+
+                {/* Callout to Register */}
+                <div className="pt-2">
+                  <div className="p-3.5 rounded-xl bg-linear-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-0.5">
+                      <div className="text-xs font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
+                        <UserPlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        <span>ยังไม่มีบัญชีผู้ใช้งานระบบใช่หรือไม่?</span>
+                      </div>
+                      <p className="text-[11px] text-emerald-700 dark:text-emerald-300">
+                        คลิกเพื่อลงทะเบียนชื่อ-สกุล และเลือกฝ่ายงานของท่านเพื่อเริ่มต้นบันทึกข้อมูล
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setAuthTab('register')}
+                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all whitespace-nowrap cursor-pointer"
+                    >
+                      สมัครเข้าใช้งานระบบ
+                    </button>
+                  </div>
                 </div>
               </div>
 

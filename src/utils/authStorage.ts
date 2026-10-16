@@ -10,130 +10,62 @@ import { doc, getDoc, setDoc, getDocs, collection } from 'firebase/firestore';
 const USERS_STORAGE_KEY = 'sangkhlaburi_nursing_users_v1';
 const CURRENT_USER_KEY = 'sangkhlaburi_nursing_current_session_v1';
 
-// Pre-configured default hospital users for instant testing and operational deployment
-export const DEFAULT_HOSPITAL_USERS: AppUser[] = [
-  {
-    id: 'user-admin-01',
-    username: 'admin',
-    password: 'password123',
-    name: 'พว. ธีรภัทร์ ภักดีสุวรรณ (ผู้ดูแลระบบ)',
-    role: 'admin',
-    department: 'ALL',
-    position: 'ผู้ดูแลระบบสารสนเทศและการประเมินภาระงาน',
-    phone: '034-595034 ต่อ 101',
-    email: 'admin.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-purple-600',
-  },
-  {
-    id: 'user-director-01',
-    username: 'director',
-    password: 'password123',
-    name: 'พว. กัลยา วัฒนเวช (หัวหน้ากลุ่มการพยาบาล)',
-    role: 'nursing_director',
-    department: 'NURSING_DIRECTORATE',
-    position: 'หัวหน้าพยาบาล / หัวหน้ากลุ่มงานการพยาบาล',
-    phone: '034-595034 ต่อ 102',
-    email: 'nursing.director.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-blue-600',
-  },
-  {
-    id: 'user-head-er-01',
-    username: 'head_er',
-    password: 'password123',
-    name: 'พว. อรรถพล ชื่นจิตร์ (หัวหน้าห้องฉุกเฉิน)',
-    role: 'department_head',
-    department: 'ER',
-    position: 'พยาบาลวิชาชีพชำนาญการ / หัวหน้างานอุบัติเหตุ-ฉุกเฉิน',
-    phone: '034-595034 ต่อ 110',
-    email: 'er.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-rose-600',
-  },
-  {
-    id: 'user-head-opd-01',
-    username: 'head_opd',
-    password: 'password123',
-    name: 'พว. วราภรณ์ มิตรภาพ (หัวหน้างานผู้ป่วยนอก)',
-    role: 'department_head',
-    department: 'OPD',
-    position: 'พยาบาลวิชาชีพชำนาญการ / หัวหน้างานผู้ป่วยนอก',
-    phone: '034-595034 ต่อ 120',
-    email: 'opd.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-blue-600',
-  },
-  {
-    id: 'user-head-ipd1-01',
-    username: 'head_ipd1',
-    password: 'password123',
-    name: 'พว. นงลักษณ์ สิทธิชัย (หัวหน้างาน IPD 1)',
-    role: 'department_head',
-    department: 'IPD1',
-    position: 'พยาบาลวิชาชีพชำนาญการ / หัวหน้าหอผู้ป่วยใน 1 (สามัญ/หญิง-เด็ก)',
-    phone: '034-595034 ต่อ 130',
-    email: 'ipd1.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-amber-600',
-  },
-  {
-    id: 'user-head-ipd2-01',
-    username: 'head_ipd2',
-    password: 'password123',
-    name: 'พว. ปิยนุช วงศ์สว่าง (หัวหน้างาน IPD 2)',
-    role: 'department_head',
-    department: 'IPD2',
-    position: 'พยาบาลวิชาชีพชำนาญการ / หัวหน้าหอผู้ป่วยใน 2 (ชาย/พิเศษ)',
-    phone: '034-595034 ต่อ 140',
-    email: 'ipd2.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-indigo-600',
-  },
-  {
-    id: 'user-head-lr-01',
-    username: 'head_lr',
-    password: 'password123',
-    name: 'พว. ปานทิพย์ เมธาวี (หัวหน้าห้องคลอด)',
-    role: 'department_head',
-    department: 'LR',
-    position: 'พยาบาลวิชาชีพชำนาญการ / หัวหน้าห้องคลอดและทารกแรกเกิด',
-    phone: '034-595034 ต่อ 150',
-    email: 'lr.sangkhla@moph.mail.go.th',
-    isActive: true,
-    createdAt: '2026-01-01T08:00:00.000Z',
-    avatarColor: 'bg-pink-600',
-  },
-];
+// The 7 demo/test accounts are removed for real production deployment
+export const TEST_USERNAMES = new Set([
+  'admin',
+  'director',
+  'head_er',
+  'head_opd',
+  'head_ipd1',
+  'head_ipd2',
+  'head_lr',
+]);
+
+export const TEST_USER_IDS = new Set([
+  'user-admin-01',
+  'user-director-01',
+  'user-head-er-01',
+  'user-head-opd-01',
+  'user-head-ipd1-01',
+  'user-head-ipd2-01',
+  'user-head-lr-01',
+]);
+
+// Initial user list is empty for real production deployment
+export const DEFAULT_HOSPITAL_USERS: AppUser[] = [];
 
 /**
- * Load all registered users from local storage or initialize defaults
+ * Load all registered users from local storage (excluding any obsolete demo accounts)
  */
 export function loadAllUsers(): AppUser[] {
   try {
     const raw = localStorage.getItem(USERS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Ensure defaults exist
-        const map = new Map<string, AppUser>();
-        DEFAULT_HOSPITAL_USERS.forEach((u) => map.set(u.username, u));
-        parsed.forEach((u) => map.set(u.username, u));
-        return Array.from(map.values());
+      if (Array.isArray(parsed)) {
+        // Filter out the 7 demo test accounts
+        return parsed.filter(
+          (u: AppUser) => !TEST_USERNAMES.has(u.username?.toLowerCase()) && !TEST_USER_IDS.has(u.id)
+        );
       }
     }
   } catch (err) {
     console.error('Failed to load users from localStorage:', err);
   }
-  // Initialize with defaults
-  saveAllUsers(DEFAULT_HOSPITAL_USERS);
-  return DEFAULT_HOSPITAL_USERS;
+  return [];
+}
+
+/**
+ * Clear all test users and reset account database
+ */
+export function clearAllTestUsers(): void {
+  try {
+    localStorage.removeItem(USERS_STORAGE_KEY);
+    localStorage.removeItem(CURRENT_USER_KEY);
+    saveAllUsers([]);
+  } catch (err) {
+    console.error('Failed to clear users:', err);
+  }
 }
 
 /**
@@ -155,8 +87,16 @@ export function getCurrentSessionUser(): AppUser | null {
     const raw = localStorage.getItem(CURRENT_USER_KEY);
     if (raw) {
       const user = JSON.parse(raw) as AppUser;
-      if (user && user.id && user.role) {
+      if (
+        user &&
+        user.id &&
+        user.role &&
+        !TEST_USERNAMES.has(user.username?.toLowerCase()) &&
+        !TEST_USER_IDS.has(user.id)
+      ) {
         return user;
+      } else {
+        localStorage.removeItem(CURRENT_USER_KEY);
       }
     }
   } catch (err) {
@@ -302,10 +242,6 @@ export function updateUser(updatedUser: AppUser): boolean {
  */
 export function deleteUser(userId: string): boolean {
   const users = loadAllUsers();
-  // Don't allow deleting master admin
-  const target = users.find((u) => u.id === userId);
-  if (target && target.username === 'admin') return false;
-
   const filtered = users.filter((u) => u.id !== userId);
   saveAllUsers(filtered);
   return true;

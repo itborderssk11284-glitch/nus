@@ -21,8 +21,8 @@ import {
   SupportWorkItem,
 } from '../types/nursing';
 
-// Default Factory Presets for Indirect Care (งานรอง)
-export function createDefaultIndirectItems(patientCount = 20): IndirectCareItem[] {
+/// Default Factory Presets for Indirect Care (งานรอง)
+export function createDefaultIndirectItems(patientCount = 0): IndirectCareItem[] {
   return [
     {
       id: 'ind-doc',
@@ -37,7 +37,7 @@ export function createDefaultIndirectItems(patientCount = 20): IndirectCareItem[
       id: 'ind-med',
       name: 'เตรียมยา (Medication Preparation)',
       category: 'medication',
-      count: Math.max(12, Math.round(patientCount * 1.5)),
+      count: patientCount === 0 ? 0 : Math.round(patientCount * 1.5),
       unitTimeMinutes: 5,
       unitLabel: 'ครั้ง',
       note: 'จัดเตรียมยา ตรวจสอบ 7 Rights ตรวจสอบสารน้ำ',
@@ -46,7 +46,7 @@ export function createDefaultIndirectItems(patientCount = 20): IndirectCareItem[
       id: 'ind-coord',
       name: 'ประสานงาน (Communication & Coordination)',
       category: 'coordination',
-      count: Math.max(4, Math.round(patientCount * 0.25)),
+      count: patientCount === 0 ? 0 : Math.round(patientCount * 0.25),
       unitTimeMinutes: 15,
       unitLabel: 'เคส',
       note: 'รับใหม่ จำหน่าย ส่งต่อ ตามผล Lab / X-Ray',
@@ -55,7 +55,7 @@ export function createDefaultIndirectItems(patientCount = 20): IndirectCareItem[
       id: 'ind-handover',
       name: 'ส่งเวร (Handover & Endorsement)',
       category: 'handover',
-      count: 3,
+      count: patientCount === 0 ? 0 : 3,
       unitTimeMinutes: 35,
       unitLabel: 'เวร',
       note: 'ส่งมอบข้อมูลผู้ป่วยข้ามเวร เช้า-บ่าย-ดึก',
@@ -71,7 +71,7 @@ export function createDefaultSupportItems(): SupportWorkItem[] {
       name: 'บริหารวอร์ด (Ward Management)',
       category: 'ward_management',
       frequencyType: 'weekly',
-      frequencyCount: 1,
+      frequencyCount: 0,
       timeMinutesPerSession: 120, // 2 ชม./สัปดาห์
       note: 'จัดตารางเวร ประชุมประจำเดือน สรุปสถิติวอร์ด',
     },
@@ -80,7 +80,7 @@ export function createDefaultSupportItems(): SupportWorkItem[] {
       name: 'ตรวจเครื่องมือ (Equipment Check)',
       category: 'equipment_check',
       frequencyType: 'daily',
-      frequencyCount: 1,
+      frequencyCount: 0,
       timeMinutesPerSession: 25, // 25 นาที/วัน
       note: 'ตรวจรถ Emergency, เครื่อง Defibrillator, เครื่องมือแพทย์',
     },
@@ -89,7 +89,7 @@ export function createDefaultSupportItems(): SupportWorkItem[] {
       name: 'ควบคุมการติดเชื้อ (Infection Control - IC)',
       category: 'ic',
       frequencyType: 'weekly',
-      frequencyCount: 1,
+      frequencyCount: 0,
       timeMinutesPerSession: 60, // 1 ชม./สัปดาห์
       note: 'ตรวจคัดแยกขยะติดเชื้อ อุณหภูมิตู้เย็น สุ่มตรวจล้างมือ',
     },
@@ -98,7 +98,7 @@ export function createDefaultSupportItems(): SupportWorkItem[] {
       name: 'พัฒนาคุณภาพ (CQI / HA)',
       category: 'cqi_ha',
       frequencyType: 'weekly',
-      frequencyCount: 1,
+      frequencyCount: 0,
       timeMinutesPerSession: 90, // 1.5 ชม./สัปดาห์
       note: 'ประชุมพัฒนาคุณภาพ ทบทวนข้างเตียง Trigger Tool, SAR',
     },

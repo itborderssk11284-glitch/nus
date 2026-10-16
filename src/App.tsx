@@ -15,6 +15,7 @@ import {
   saveStandards,
   saveThemePreference,
   createNewDailyRecord,
+  clearAllRecords,
   FontScale,
   getFontScalePreference,
   saveFontScalePreference,
@@ -39,7 +40,7 @@ import { CalculationReferenceModal } from './components/CalculationReferenceModa
 import { SettingsModal } from './components/SettingsModal';
 import { HospitalLogo } from './components/HospitalLogo';
 import { AppUser, ROLE_LABELS, DEPARTMENT_LABELS } from './types/auth';
-import { getCurrentSessionUser, setCurrentSessionUser } from './utils/authStorage';
+import { getCurrentSessionUser, setCurrentSessionUser, clearAllTestUsers } from './utils/authStorage';
 import { AuthScreen } from './components/AuthScreen';
 import { UserManagementModal } from './components/UserManagementModal';
 import {
@@ -123,6 +124,48 @@ export default function App() {
     setFontScale(scale);
     saveFontScalePreference(scale);
   };
+
+  // One-time cleanup: Clear all 7 test accounts and test simulation records to reset database to 0
+  useEffect(() => {
+    // Purge test users from localStorage
+    const rawUsers = localStorage.getItem('sangkhlaburi_nursing_users_v1');
+    if (rawUsers) {
+      try {
+        const parsed = JSON.parse(rawUsers);
+        if (Array.isArray(parsed)) {
+          const cleanUsers = parsed.filter(
+            (u: any) =>
+              !['admin', 'director', 'head_er', 'head_opd', 'head_ipd1', 'head_ipd2', 'head_lr'].includes(u.username?.toLowerCase()) &&
+              !['user-admin-01', 'user-director-01', 'user-head-er-01', 'user-head-opd-01', 'user-head-ipd1-01', 'user-head-ipd2-01', 'user-head-lr-01'].includes(u.id)
+          );
+          if (cleanUsers.length !== parsed.length) {
+            localStorage.setItem('sangkhlaburi_nursing_users_v1', JSON.stringify(cleanUsers));
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Purge test records from localStorage
+    const rawRecs = localStorage.getItem('sangkhlaburi_nursing_records_v2');
+    if (rawRecs) {
+      try {
+        const parsed = JSON.parse(rawRecs);
+        if (Array.isArray(parsed)) {
+          const cleanRecs = parsed.filter(
+            (r: any) => !r.notes?.includes('รพ.พหลฯ') && !r.notes?.includes('สถานการณ์เวรปกติ')
+          );
+          if (cleanRecs.length !== parsed.length) {
+            localStorage.setItem('sangkhlaburi_nursing_records_v2', JSON.stringify(cleanRecs));
+            setRecords(cleanRecs);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
 
   // Subscribe to Firebase Auth changes
   useEffect(() => {
@@ -283,6 +326,15 @@ export default function App() {
     if (currentUser) {
       saveStandardsToCloud(reset).catch(console.error);
     }
+  };
+
+  // Clear all test records to 0 for real data recording
+  const handleClearAllRecords = () => {
+    clearAllRecords();
+    setRecords([]);
+    setSelectedDate(formatDateISO(new Date()));
+    setCloudSyncToast('ล้างข้อมูลเวรทดสอบในระบบเป็น 0 เรียบร้อย พร้อมบันทึกข้อมูลจริง');
+    setTimeout(() => setCloudSyncToast(null), 3500);
   };
 
   // Google Login and Logout
@@ -447,6 +499,7 @@ export default function App() {
         standardsConfig={standardsConfig}
         onSaveStandards={handleSaveStandards}
         onResetStandards={handleResetStandards}
+        onClearAllRecords={handleClearAllRecords}
       />
 
       <CalculationReferenceModal

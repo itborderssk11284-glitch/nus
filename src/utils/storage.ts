@@ -21,135 +21,127 @@ export function formatDateISO(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-// Create a blank/template new daily record for any date
-export function createNewDailyRecord(dateStr: string, recorderName = 'พว. พยาบาลตรวจการเวร'): DailyRecord {
+// Create a clean blank new daily record with all counts set to 0 for real data entry
+export function createNewDailyRecord(dateStr: string, recorderName = ''): DailyRecord {
   return {
     id: `sk-rec-${dateStr}`,
     date: dateStr,
     recorderName,
-    recorderPosition: 'พยาบาลวิชาชีพชำนาญการ / พยาบาลตรวจการเวร',
-    recorderPhone: '089-456-7890',
+    recorderPosition: '',
+    recorderPhone: '',
     notes: '',
     shiftType: 'all_day',
     er: {
-      triage1_resus: 1,
-      triage2_emergency: 4,
-      triage3_urgency: 11,
-      triage4_semiUrgent: 18,
-      triage5_nonUrgent: 8,
+      triage1_resus: 0,
+      triage2_emergency: 0,
+      triage3_urgency: 0,
+      triage4_semiUrgent: 0,
+      triage5_nonUrgent: 0,
       cprCount: 0,
-      ambulanceReferral: 1,
-      observationCases: 4,
-      indirectItems: createDefaultIndirectItems(42),
+      ambulanceReferral: 0,
+      observationCases: 0,
+      indirectItems: createDefaultIndirectItems(0),
       supportItems: createDefaultSupportItems(),
-      actualStaff: { morning: 3, afternoon: 3, night: 2 },
+      actualStaff: { morning: 0, afternoon: 0, night: 0 },
     },
     opd: {
-      generalPatients: 140,
-      chronicPatients: 70,
-      minorSurgery: 20,
-      specialClinic: 25,
-      screeningPatients: 210,
-      indirectItems: createDefaultIndirectItems(230),
+      generalPatients: 0,
+      chronicPatients: 0,
+      minorSurgery: 0,
+      specialClinic: 0,
+      screeningPatients: 0,
+      indirectItems: createDefaultIndirectItems(0),
       supportItems: createDefaultSupportItems(),
-      actualStaff: { morning: 5, afternoon: 3, night: 0 },
+      actualStaff: { morning: 0, afternoon: 0, night: 0 },
     },
     ipd1: {
       wardName: 'หอผู้ป่วยใน 1 (IPD1 หญิง/กุมาร)',
       bedCapacity: 30,
-      currentCensus: 24,
-      pcs1_selfCare: 4,
-      pcs2_moderateCare: 11,
-      pcs3_maximumCare: 7,
-      pcs4_intensiveCare: 2,
+      currentCensus: 0,
+      pcs1_selfCare: 0,
+      pcs2_moderateCare: 0,
+      pcs3_maximumCare: 0,
+      pcs4_intensiveCare: 0,
       pcs5_ventilator: 0,
-      admissions: 5,
-      discharges: 4,
-      indirectItems: createDefaultIndirectItems(24),
+      admissions: 0,
+      discharges: 0,
+      indirectItems: createDefaultIndirectItems(0),
       supportItems: createDefaultSupportItems(),
-      actualStaff: { morning: 3, afternoon: 3, night: 2 },
+      actualStaff: { morning: 0, afternoon: 0, night: 0 },
     },
     ipd2: {
       wardName: 'หอผู้ป่วยใน 2 (IPD2 ชาย/พิเศษ)',
       bedCapacity: 28,
-      currentCensus: 21,
-      pcs1_selfCare: 3,
-      pcs2_moderateCare: 9,
-      pcs3_maximumCare: 6,
-      pcs4_intensiveCare: 2,
-      pcs5_ventilator: 1,
-      admissions: 4,
-      discharges: 3,
-      indirectItems: createDefaultIndirectItems(21),
+      currentCensus: 0,
+      pcs1_selfCare: 0,
+      pcs2_moderateCare: 0,
+      pcs3_maximumCare: 0,
+      pcs4_intensiveCare: 0,
+      pcs5_ventilator: 0,
+      admissions: 0,
+      discharges: 0,
+      indirectItems: createDefaultIndirectItems(0),
       supportItems: createDefaultSupportItems(),
-      actualStaff: { morning: 3, afternoon: 2, night: 2 },
+      actualStaff: { morning: 0, afternoon: 0, night: 0 },
     },
     lr: {
-      stage1Latent: 2,
-      stage1Active: 1,
-      stage2Delivery: 2,
-      stage3Placenta: 2,
-      postpartumRecovery: 2,
-      highRiskCases: 1,
+      stage1Latent: 0,
+      stage1Active: 0,
+      stage2Delivery: 0,
+      stage3Placenta: 0,
+      postpartumRecovery: 0,
+      highRiskCases: 0,
       newbornResuscitation: 0,
       referralCases: 0,
-      indirectItems: createDefaultIndirectItems(7),
+      indirectItems: createDefaultIndirectItems(0),
       supportItems: createDefaultSupportItems(),
-      actualStaff: { morning: 2, afternoon: 2, night: 1 },
+      actualStaff: { morning: 0, afternoon: 0, night: 0 },
     },
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 }
 
-// Generate Realistic Seed Data
-function generateSeedRecords(): DailyRecord[] {
-  const records: DailyRecord[] = [];
-  const today = new Date();
-
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const dateStr = formatDateISO(d);
-    const rec = createNewDailyRecord(dateStr, i % 2 === 0 ? 'พว. กัลยา วงศ์สุวรรณ' : 'พว. สุภาพร รัตนกาญจน์');
-    rec.notes = i === 2 ? 'มีเคส CPR และส่งต่อผู้ป่วยวิกฤตไป รพ.พหลฯ' : 'สถานการณ์เวรปกติ';
-    records.push(rec);
-  }
-
-  return records;
-}
-
 export function loadRecords(): DailyRecord[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_RECORDS);
     if (!raw) {
-      const initial = generateSeedRecords();
-      saveRecords(initial);
-      return initial;
+      return [];
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure all loaded records have indirectItems & supportItems
-      return parsed.map((r: DailyRecord) => {
-        if (!r.er.indirectItems) r.er.indirectItems = createDefaultIndirectItems(40);
+      // Filter out dummy/test records from previous simulations
+      const clean = parsed.filter(
+        (r: DailyRecord) =>
+          !r.notes?.includes('รพ.พหลฯ') && !r.notes?.includes('สถานการณ์เวรปกติ')
+      );
+      return clean.map((r: DailyRecord) => {
+        if (!r.er.indirectItems) r.er.indirectItems = createDefaultIndirectItems(0);
         if (!r.er.supportItems) r.er.supportItems = createDefaultSupportItems();
-        if (!r.opd.indirectItems) r.opd.indirectItems = createDefaultIndirectItems(200);
+        if (!r.opd.indirectItems) r.opd.indirectItems = createDefaultIndirectItems(0);
         if (!r.opd.supportItems) r.opd.supportItems = createDefaultSupportItems();
-        if (!r.ipd1.indirectItems) r.ipd1.indirectItems = createDefaultIndirectItems(24);
+        if (!r.ipd1.indirectItems) r.ipd1.indirectItems = createDefaultIndirectItems(0);
         if (!r.ipd1.supportItems) r.ipd1.supportItems = createDefaultSupportItems();
-        if (!r.ipd2.indirectItems) r.ipd2.indirectItems = createDefaultIndirectItems(20);
+        if (!r.ipd2.indirectItems) r.ipd2.indirectItems = createDefaultIndirectItems(0);
         if (!r.ipd2.supportItems) r.ipd2.supportItems = createDefaultSupportItems();
-        if (!r.lr.indirectItems) r.lr.indirectItems = createDefaultIndirectItems(6);
+        if (!r.lr.indirectItems) r.lr.indirectItems = createDefaultIndirectItems(0);
         if (!r.lr.supportItems) r.lr.supportItems = createDefaultSupportItems();
         return r;
       });
     }
-    const initial = generateSeedRecords();
-    saveRecords(initial);
-    return initial;
+    return [];
   } catch (err) {
     console.error('Failed to load records from storage', err);
-    return generateSeedRecords();
+    return [];
+  }
+}
+
+export function clearAllRecords(): void {
+  try {
+    localStorage.removeItem(STORAGE_KEY_RECORDS);
+    saveRecords([]);
+  } catch (err) {
+    console.error('Failed to clear records from storage', err);
   }
 }
 

@@ -83,10 +83,6 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({
   };
 
   const handleDelete = (targetUser: AppUser) => {
-    if (targetUser.username === 'admin') {
-      alert('ไม่สามารถลบบัญชีผู้ดูแลระบบหลัก (Master Admin) ได้');
-      return;
-    }
     if (window.confirm(`ยืนยันการลบผู้ใช้ "${targetUser.name}" (${targetUser.username}) ออกจากระบบ?`)) {
       deleteUser(targetUser.id);
       setActionSuccess(`ลบผู้ใช้ ${targetUser.name} ออกจากระบบเรียบร้อย`);
