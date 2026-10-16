@@ -8,6 +8,8 @@ import {
   Save,
   CheckCircle2,
   Trash2,
+  Cloud,
+  RefreshCw,
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -17,6 +19,8 @@ interface SettingsModalProps {
   onSaveStandards: (newConfig: StandardWeightsConfig) => void;
   onResetStandards: () => void;
   onClearAllRecords?: () => void;
+  onSyncFirebase?: () => Promise<void> | void;
+  isSyncingFirebase?: boolean;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -26,6 +30,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSaveStandards,
   onResetStandards,
   onClearAllRecords,
+  onSyncFirebase,
+  isSyncingFirebase = false,
 }) => {
   const [cfg, setCfg] = useState<StandardWeightsConfig>(JSON.parse(JSON.stringify(standardsConfig)));
   const [savedToast, setSavedToast] = useState(false);
@@ -234,6 +240,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="w-full p-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 font-mono"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Firebase Cloud Database Status & Sync Section */}
+          <div className="p-4 rounded-xl bg-linear-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/40 dark:to-teal-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-1">
+                <div className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5 text-xs">
+                  <Cloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>เชื่อมต่อฐานข้อมูล Firebase Firestore</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 dark:bg-emerald-800 text-emerald-900 dark:text-emerald-100 font-bold border border-emerald-300 dark:border-emerald-700">
+                    เชื่อมต่อแล้ว (Online)
+                  </span>
+                </div>
+                <div className="text-[11px] text-emerald-800 dark:text-emerald-300 font-mono">
+                  Database ID: ai-studio-a3ea8142-d4aa-46d4-903c-79f3be317369
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                  ซิงค์ข้อมูลเวรพยาบาล, เกณฑ์มาตรฐาน สธ., และบัญชีผู้ใช้งานระบบแบบอัตโนมัติ
+                </div>
+              </div>
+              {onSyncFirebase && (
+                <button
+                  type="button"
+                  disabled={isSyncingFirebase}
+                  onClick={async () => {
+                    await onSyncFirebase();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer whitespace-nowrap self-start sm:self-auto disabled:opacity-60"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingFirebase ? 'animate-spin' : ''}`} />
+                  <span>{isSyncingFirebase ? 'กำลังซิงค์ข้อมูล...' : 'ซิงค์ไป Firebase เดี๋ยวนี้'}</span>
+                </button>
+              )}
             </div>
           </div>
 

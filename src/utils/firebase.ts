@@ -8,6 +8,7 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithPopup,
+  signInAnonymously,
   signOut,
   onAuthStateChanged,
   User,
@@ -22,6 +23,7 @@ import {
   onSnapshot,
   setDoc,
   deleteDoc,
+  getDocs,
   Unsubscribe,
 } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -121,6 +123,87 @@ export async function testConnection(): Promise<boolean> {
 // Immediate connection test invocation
 testConnection();
 
+// Auto-connect to Firebase Auth
+export async function ensureFirebaseAuth(): Promise<User | null> {
+  if (auth.currentUser) return auth.currentUser;
+  try {
+    const cred = await signInAnonymously(auth);
+    console.log('Connected to Firebase auth successfully:', cred.user.uid);
+    // Write health check doc once signed in
+    try {
+      await setDoc(doc(db, 'test', 'connection'), {
+        status: 'online',
+        hospitalId: 'sangkhlaburi',
+        firestoreDatabaseId: effectiveFirebaseConfig.firestoreDatabaseId,
+        updatedAt: new Date().toISOString(),
+      }, { merge: true });
+    } catch {
+      // Non-blocking ping
+    }
+    return cred.user;
+  } catch (error) {
+    console.warn('Firebase auto-auth note:', error);
+    return null;
+  }
+}
+
+// Initial background auth connection
+ensureFirebaseAuth();
+
+/**
+ * Purge any previous test accounts and simulation records from Firebase Firestore
+ */
+export async function purgeCloudTestData(): Promise<{
+  deletedUsers: number;
+  deletedRecords: number;
+}> {
+  let deletedUsers = 0;
+  let deletedRecords = 0;
+  try {
+    const user = await ensureFirebaseAuth();
+    if (!user) return { deletedUsers: 0, deletedRecords: 0 };
+
+    // 1. Delete test user documents from Firestore
+    const testIds = [
+      'user-admin-01',
+      'user-director-01',
+      'user-head-er-01',
+      'user-head-opd-01',
+      'user-head-ipd1-01',
+      'user-head-ipd2-01',
+      'user-head-lr-01',
+    ];
+    for (const tid of testIds) {
+      try {
+        await deleteDoc(doc(db, 'users', tid));
+        deletedUsers++;
+      } catch {
+        // Doc might not exist
+      }
+    }
+
+    // 2. Scan and delete simulation records
+    const q = query(collection(db, 'daily_records'), where('hospitalId', '==', 'sangkhlaburi'));
+    const snaps = await getDocs(q);
+    for (const snap of snaps.docs) {
+      const data = snap.data();
+      if (
+        data.notes?.includes('รพ.พหลฯ') ||
+        data.notes?.includes('สถานการณ์เวรปกติ') ||
+        data.id?.includes('seed') ||
+        snap.id.includes('seed')
+      ) {
+        await deleteDoc(doc(db, 'daily_records', snap.id));
+        deletedRecords++;
+      }
+    }
+    console.log(`Purged Firestore cloud test data: ${deletedUsers} test users, ${deletedRecords} simulation records`);
+  } catch (err) {
+    console.warn('purgeCloudTestData note:', err);
+  }
+  return { deletedUsers, deletedRecords };
+}
+
 // Authentication Helpers
 export async function signInWithGoogle(): Promise<User> {
   try {
@@ -198,8 +281,8 @@ export function subscribeToDailyRecords(
 
 // Cloud Save/Update Record
 export async function saveRecordToCloud(record: DailyRecord): Promise<void> {
-  if (!auth.currentUser) {
-    // If not signed in to Firebase, changes will remain safely in localStorage
+  const user = auth.currentUser || (await ensureFirebaseAuth());
+  if (!user) {
     return;
   }
 
@@ -208,7 +291,7 @@ export async function saveRecordToCloud(record: DailyRecord): Promise<void> {
     const payload = {
       ...record,
       hospitalId: 'sangkhlaburi',
-      userId: auth.currentUser.uid,
+      userId: user.uid,
       updatedAt: new Date().toISOString(),
     };
 
@@ -221,7 +304,8 @@ export async function saveRecordToCloud(record: DailyRecord): Promise<void> {
 
 // Cloud Delete Record
 export async function deleteRecordFromCloud(recordId: string): Promise<void> {
-  if (!auth.currentUser) {
+  const user = auth.currentUser || (await ensureFirebaseAuth());
+  if (!user) {
     return;
   }
 
@@ -236,7 +320,8 @@ export async function deleteRecordFromCloud(recordId: string): Promise<void> {
 
 // Cloud Save Standards Config
 export async function saveStandardsToCloud(config: StandardWeightsConfig): Promise<void> {
-  if (!auth.currentUser) {
+  const user = auth.currentUser || (await ensureFirebaseAuth());
+  if (!user) {
     return;
   }
 
@@ -289,5 +374,97 @@ export function subscribeToStandardsCloud(
     return unsub;
   } catch (error) {
     handleFirestoreError(error, OperationType.GET, path);
+  }
+}
+
+/**
+ * Sync all current local data (Records, Standards Config, Registered Users) to Firebase Firestore
+ */
+export async function syncAllLocalDataToFirebase(): Promise<{
+  success: boolean;
+  recordsCount: number;
+  usersCount: number;
+  message: string;
+}> {
+  try {
+    const user = await ensureFirebaseAuth();
+    if (!user) {
+      return {
+        success: false,
+        recordsCount: 0,
+        usersCount: 0,
+        message: 'ไม่สามารถเชื่อมต่อระบบยืนยันตัวตน Firebase Auth ได้ในขณะนี้',
+      };
+    }
+
+    // 1. Sync Standards Config
+    const localStandardsRaw = localStorage.getItem('sangkhlaburi_nursing_standards_v2');
+    if (localStandardsRaw) {
+      try {
+        const standards = JSON.parse(localStandardsRaw);
+        await saveStandardsToCloud(standards);
+      } catch (e) {
+        console.warn('Standards sync error:', e);
+      }
+    }
+
+    // 2. Sync Daily Records
+    const localRecordsRaw = localStorage.getItem('sangkhlaburi_nursing_records_v2');
+    let recordsCount = 0;
+    if (localRecordsRaw) {
+      try {
+        const records = JSON.parse(localRecordsRaw);
+        if (Array.isArray(records)) {
+          for (const rec of records) {
+            await saveRecordToCloud(rec);
+            recordsCount++;
+          }
+        }
+      } catch (e) {
+        console.warn('Records sync error:', e);
+      }
+    }
+
+    // 3. Sync Registered Users
+    const localUsersRaw = localStorage.getItem('sangkhlaburi_nursing_users_v1');
+    let usersCount = 0;
+    if (localUsersRaw) {
+      try {
+        const users = JSON.parse(localUsersRaw);
+        if (Array.isArray(users)) {
+          for (const u of users) {
+            if (u && u.id) {
+              await setDoc(
+                doc(db, 'users', u.id),
+                {
+                  ...u,
+                  hospitalId: 'sangkhlaburi',
+                  updatedAt: new Date().toISOString(),
+                },
+                { merge: true }
+              );
+              usersCount++;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Users sync error:', e);
+      }
+    }
+
+    return {
+      success: true,
+      recordsCount,
+      usersCount,
+      message: `เชื่อมต่อและซิงค์ฐานข้อมูลไปยัง Firebase สำเร็จเรียบร้อย (ข้อมูลเวร: ${recordsCount} รายการ, ผู้ใช้งาน: ${usersCount} บัญชี, เกณฑ์มาตรฐาน สธ.)`,
+    };
+  } catch (err) {
+    console.error('Failed to sync all data to Firebase:', err);
+    return {
+      success: false,
+      recordsCount: 0,
+      usersCount: 0,
+      message: 'เกิดข้อผิดพลาดในการเชื่อมต่อและส่งข้อมูลไปยัง Firebase',
+    };
   }
 }

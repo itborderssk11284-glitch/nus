@@ -54,8 +54,7 @@ service cloud.firestore {
 
     // Daily Nursing Workload Records
     match /daily_records/{recordId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn() && resource.data.hospitalId == 'sangkhlaburi';
+      allow read: if isSignedIn();
       allow create: if isSignedIn()
                     && isValidId(recordId)
                     && isValidDailyRecord(incoming());
@@ -87,6 +86,7 @@ service cloud.firestore {
     // System Connection Health Check Document
     match /test/{docId} {
       allow get: if true;
+      allow write: if isSignedIn();
     }
   }
 }

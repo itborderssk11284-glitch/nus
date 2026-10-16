@@ -41,6 +41,7 @@ interface TopNavbarProps {
   onLogoutUser: () => void;
   fontScale: 'normal' | 'comfort' | 'large';
   onChangeFontScale: (scale: 'normal' | 'comfort' | 'large') => void;
+  onSyncFirebaseNow?: () => void;
 }
 
 export const TopNavbar: React.FC<TopNavbarProps> = ({
@@ -59,6 +60,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onLogoutUser,
   fontScale,
   onChangeFontScale,
+  onSyncFirebaseNow,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -242,12 +244,12 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
               {/* Firebase Cloud Sync Status */}
               <button
                 type="button"
-                onClick={user ? undefined : onSignIn}
-                title={user ? `Firebase ซิงค์แล้ว: ${user.email}` : 'คลิกเพื่อเข้าสู่ระบบเชื่อมต่อ Firebase'}
-                className={`p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                onClick={onSyncFirebaseNow || (user ? undefined : onSignIn)}
+                title="ฐานข้อมูล Firebase Firestore (ai-studio-a3ea8142-d4aa-46d4-903c-79f3be317369) - คลิกเพื่อซิงค์ข้อมูลล่าสุด"
+                className={`p-2 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
                   user
-                    ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
+                    ? 'bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                 }`}
               >
                 {isSyncing ? (
@@ -257,7 +259,7 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
                 ) : (
                   <Cloud className="w-3.5 h-3.5 text-slate-400" />
                 )}
-                <span className="hidden 2xl:inline">{user ? 'Firebase Live' : 'ในเครื่อง'}</span>
+                <span className="hidden 2xl:inline">{isSyncing ? 'กำลังซิงค์...' : user ? 'Firebase Live' : 'ซิงค์ Firebase'}</span>
               </button>
 
               {/* User Profile Card & Prominent Logout (Real Production Usage) */}

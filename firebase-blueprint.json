@@ -106,6 +106,58 @@
           "description": "Connection status string"
         }
       }
+    },
+    "AppUser": {
+      "title": "AppUser",
+      "description": "Hospital nursing user profile and role-based access credentials",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique user ID"
+        },
+        "username": {
+          "type": "string",
+          "description": "Unique login username"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of nurse or officer"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role: admin, nursing_director, or department_head"
+        },
+        "department": {
+          "type": "string",
+          "description": "Ward department assignment"
+        },
+        "position": {
+          "type": "string",
+          "description": "Hospital official position"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Active status"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Created timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last updated timestamp"
+        }
+      },
+      "required": ["id", "username", "name", "role", "department", "position"]
     }
   },
   "firestore": {
@@ -116,6 +168,10 @@
     "/standards_config/{configId}": {
       "schema": "StandardWeightsConfig",
       "description": "MOPH standard calculation weights config"
+    },
+    "/users/{userId}": {
+      "schema": "AppUser",
+      "description": "Registered hospital staff and nursing accounts"
     },
     "/test/{docId}": {
       "schema": "TestConnection",
