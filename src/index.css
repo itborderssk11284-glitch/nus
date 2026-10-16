@@ -71,19 +71,89 @@ html[data-font-scale="large"] {
   background: rgba(100, 116, 139, 0.8);
 }
 
-/* Custom Print Layout for Official Hospital Report */
+/* Custom Print Layout for Official Hospital Report - Exact A4 Calibration */
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm 8mm 10mm;
+}
+
+@page a4-landscape {
+  size: A4 landscape;
+  margin: 8mm 10mm 8mm 10mm;
+}
+
 @media print {
-  body {
-    background-color: white !important;
-    color: black !important;
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 8mm 10mm;
   }
-  .no-print {
+
+  html, body {
+    width: 210mm !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    font-size: 11px !important;
+    line-height: 1.35 !important;
+  }
+
+  /* Hide all interactive app bars, navigation, footers */
+  .no-print, header, nav, aside, footer {
     display: none !important;
   }
+
   .print-only {
     display: block !important;
   }
+
+  /* A4 Printable Sheet Container */
+  .a4-print-sheet {
+    width: 100% !important;
+    max-width: 190mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-sizing: border-box !important;
+  }
+
+  .a4-single-page {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
   .page-break-after {
-    page-break-after: always;
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+
+  .page-break-inside-avoid {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  table {
+    page-break-inside: auto;
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
   }
 }
